@@ -1,18 +1,19 @@
 import * as THREE from 'three';
+import { getBasePath } from '../config/assets';
 
 // 纹理配置：优先使用本地，备选使用网络
 const textureConfig = {
   // 本地纹理路径（public/textures/）
   localTextures: {
-    sun: '/textures/sun.jpg',
-    mercury: '/textures/mercury.jpg',
-    venus: '/textures/venus.jpg',
-    earth: '/textures/earth.jpg',
-    mars: '/textures/mars.jpg',
-    jupiter: '/textures/jupiter.jpg',
-    saturn: '/textures/saturn.jpg',
-    uranus: '/textures/uranus.jpg',
-    neptune: '/textures/neptune.jpg'
+    sun: `${getBasePath()}textures/sun.jpg`,
+    mercury: `${getBasePath()}textures/mercury.jpg`,
+    venus: `${getBasePath()}textures/venus.jpg`,
+    earth: `${getBasePath()}textures/earth.jpg`,
+    mars: `${getBasePath()}textures/mars.jpg`,
+    jupiter: `${getBasePath()}textures/jupiter.jpg`,
+    saturn: `${getBasePath()}textures/saturn.jpg`,
+    uranus: `${getBasePath()}textures/uranus.jpg`,
+    neptune: `${getBasePath()}textures/neptune.jpg`
   },
 
   // NASA网络纹理URL（作为备选，使用Three.js官方源）

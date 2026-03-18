@@ -8,7 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "download:textures": "node download-textures.js"
+    "download:textures": "node download-textures.js",
+    "download:audio": "node download-audio.js",
+    "check:assets": "node scripts/check-assets.js"
   },
   "dependencies": {
     "react": "^19.2.4",

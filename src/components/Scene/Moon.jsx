@@ -2,10 +2,10 @@ import { useRef, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
 import { useStore } from '../../store/useStore';
-import { loadPlanetTexture } from '../../utils/textureLoader';
 import { generatePlanetTexture } from '../../utils/textureGenerator';
 import { moonData } from '../../data/planets';
 import { playSoundEffect } from './AudioManager';
+import { getBasePath } from '../../config/assets';
 import * as THREE from 'three';
 
 export default function Moon({ parentScale = 1 }) {
@@ -26,9 +26,10 @@ export default function Moon({ parentScale = 1 }) {
   const orbitRadius = 2.5;
 
   useEffect(() => {
-    // 加载月球纹理 - 直接使用本地路径
+    // 加载月球纹理 - 使用正确的路径
     const textureLoader = new THREE.TextureLoader();
-    textureLoader.load('/textures/moon.jpg',
+    const moonTexturePath = `${getBasePath()}textures/moon.jpg`;
+    textureLoader.load(moonTexturePath,
       (loadedTexture) => {
         setTexture(loadedTexture);
       },

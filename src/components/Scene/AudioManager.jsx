@@ -1,5 +1,6 @@
 import { useRef, useEffect, createContext, useContext, useState } from 'react';
 import { useStore } from '../../store/useStore';
+import { getMusicPath, getSoundPath } from '../../config/assets';
 
 const AudioContext = createContext(null);
 
@@ -15,13 +16,13 @@ export function AudioProvider({ children }) {
       audioRef.current = new (window.AudioContext || window.webkitAudioContext)();
 
       // 创建背景音乐音频元素
-      backgroundAudioRef.current = new Audio('/music/background.mp3');
+      backgroundAudioRef.current = new Audio(getMusicPath('background.mp3'));
       backgroundAudioRef.current.loop = true;
       backgroundAudioRef.current.volume = 0.3;
       backgroundAudioRef.current.id = 'background-music';
       backgroundAudioRef.current.preload = 'auto';
 
-      console.log('AudioProvider: Audio element created:', backgroundAudioRef.current);
+      console.log('AudioProvider: Audio element created:', backgroundAudioRef.current, 'src:', backgroundAudioRef.current.src);
       setIsInitialized(true);
     }
 
@@ -118,15 +119,15 @@ export function playSoundEffect(type) {
 
   switch (type) {
     case 'jump':
-      audio.src = '/sounds/jump.mp3';
+      audio.src = getSoundPath('jump.mp3');
       audio.volume = 0.4;
       break;
     case 'click':
-      audio.src = '/sounds/click.mp3';
+      audio.src = getSoundPath('click.mp3');
       audio.volume = 0.3;
       break;
     case 'hover':
-      audio.src = '/sounds/hover.mp3';
+      audio.src = getSoundPath('hover.mp3');
       audio.volume = 0.2;
       break;
     default:
