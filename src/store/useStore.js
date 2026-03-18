@@ -30,7 +30,7 @@ export const useStore = create((set) => ({
   setOrbitColor: (color) => set({ orbitColor: color }),
 
   // 轨道粗细
-  orbitThickness: 2,
+  orbitThickness: 1,
   setOrbitThickness: (thickness) => set({ orbitThickness: thickness }),
 
   // 暂停/播放

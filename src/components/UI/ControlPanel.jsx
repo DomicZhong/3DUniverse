@@ -120,11 +120,11 @@ export default function ControlPanel() {
         </div>
         <input
           type="range"
-          min="0.1"
-          max="1000"
-          step="0.1"
-          value={timeSpeed}
-          onChange={(e) => setTimeSpeed(parseFloat(e.target.value))}
+          min="-10"
+          max="30"
+          step="1"
+          value={Math.log10(timeSpeed) * 10}
+          onChange={(e) => setTimeSpeed(Math.pow(10, parseFloat(e.target.value) / 10))}
           className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500"
         />
         <div className="flex justify-between text-xs text-gray-500 mt-1">

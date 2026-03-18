@@ -79,9 +79,17 @@ export default function Sun() {
         />
       </mesh>
 
-      {/* 太阳光源 */}
-      <pointLight position={[0, 0, 0]} intensity={8} distance={1000} decay={1.2} />
-      <ambientLight intensity={0.4} />
+      {/* 太阳光源 - 点光源，向所有方向发光 */}
+      <pointLight
+        position={[0, 0, 0]}
+        intensity={50}
+        distance={3000}
+        decay={0.8}
+        color="#FFFFFF"
+      />
+
+      {/* 补充环境光，模拟星际散射光 */}
+      <ambientLight intensity={0.6} color="#90B0D0" />
     </group>
   );
 }

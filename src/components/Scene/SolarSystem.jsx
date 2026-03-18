@@ -16,20 +16,22 @@ function ControlsProvider({ children }) {
   const controlsRef = useRef(null);
   const [controls, setControls] = useState(null);
 
-  useEffect(() => {
-    if (controlsRef.current) {
-      setControls(controlsRef.current);
+  // 使用 ref 回调确保在 OrbitControls 挂载后立即设置 controls
+  const setControlsRef = (ref) => {
+    controlsRef.current = ref;
+    if (ref) {
+      setControls(ref);
     }
-  }, []);
+  };
 
   return (
     <>
       <OrbitControls
-        ref={controlsRef}
+        ref={setControlsRef}
         enablePan={true}
         enableZoom={true}
         enableRotate={true}
-        minDistance={10}
+        minDistance={0.2}
         maxDistance={300}
         maxPolarAngle={Math.PI / 1.5}
       />
@@ -46,13 +48,8 @@ function CameraJumper({ scale }) {
   const { camera, scene } = useThree();
   const controls = useContext(ControlsContext);
 
-  console.log('CameraJumper render:', { cameraTarget, hasCamera: !!camera, hasControls: !!controls });
-
   useEffect(() => {
-    console.log('CameraJumper useEffect triggered:', { cameraTarget });
     if (cameraTarget && camera && controls) {
-      console.log('Jumping to:', cameraTarget);
-
       // 短暂延迟确保所有元素都已渲染
       setTimeout(() => {
 
@@ -69,8 +66,6 @@ function CameraJumper({ scale }) {
         let targetPosition = new THREE.Vector3();
         let foundTarget = false;
 
-        console.log('Starting scene traverse to find planet:', cameraTarget);
-
         scene.traverse((object) => {
           // 优先查找标记为 isPlanetMesh 的 mesh，这是行星或月球的实际网格
           if (object.userData && object.userData.planetId === cameraTarget) {
@@ -80,7 +75,6 @@ function CameraJumper({ scale }) {
               object.getWorldPosition(worldPosition);
               targetPosition.copy(worldPosition);
               foundTarget = true;
-              console.log('Found planet/moon mesh at real position:', targetPosition, 'object:', object);
             }
             // 如果是 group 但还没有找到 mesh，继续查找（向后兼容）
             else if (!foundTarget && object.isGroup) {
@@ -90,7 +84,6 @@ function CameraJumper({ scale }) {
                   child.getWorldPosition(worldPosition);
                   targetPosition.copy(worldPosition);
                   foundTarget = true;
-                  console.log('Found planet mesh via group traverse:', targetPosition, 'object:', child);
                 }
               });
             }
@@ -100,12 +93,9 @@ function CameraJumper({ scale }) {
               object.getWorldPosition(worldPosition);
               targetPosition.copy(worldPosition);
               foundTarget = true;
-              console.log('Found mesh at real position (fallback):', targetPosition, 'object:', object);
             }
           }
         });
-
-        console.log('Scene traverse completed, foundTarget:', foundTarget, 'targetPosition:', targetPosition);
 
         // 如果没找到，使用计算的位置作为备用
         if (!foundTarget) {
@@ -117,13 +107,10 @@ function CameraJumper({ scale }) {
             const earthOrbitRadius = 2 + Math.log10(149.6) * 15;
             targetPosition.set(earthOrbitRadius + 3, 0, 0);
           }
-          console.log('Using calculated position as fallback:', targetPosition);
         }
 
         const planetSize = scale * 0.3 + Math.log10(targetData.diameter / 1000) * 0.3;
-        const distance = planetSize * 10 * zoomMultiplier;
-
-        console.log('Camera jump details:', { planetSize, distance, targetPosition, foundTarget });
+        const distance = planetSize * 2.5 * zoomMultiplier;
 
         // 计算相机位置：垂直于太阳-行星连线的视角，太阳在正左方
         const startPos = camera.position.clone();
@@ -132,9 +119,9 @@ function CameraJumper({ scale }) {
         const directionFromSun = targetPosition.clone().normalize();
 
         // 创建垂直于太阳-行星连线的向量（使用叉积）
-        // 如果太阳-行星向量在XZ平面，垂直向量可以通过叉积得到
-        // 使相机在行星的右上方，这样太阳在正左方
-        const perpendicularDirection = new THREE.Vector3(0, 1, 0).cross(directionFromSun).normalize();
+        // 要使太阳在正左方，相机需要在行星的右侧
+        // 使用 directionFromSun × (0, 1, 0) 得到正确的垂直方向
+        const perpendicularDirection = directionFromSun.clone().cross(new THREE.Vector3(0, 1, 0)).normalize();
 
         // 相机位置：从行星沿垂直方向延伸
         const endPos = targetPosition.clone().add(perpendicularDirection.multiplyScalar(distance));
@@ -164,11 +151,6 @@ function CameraJumper({ scale }) {
             controls.target.copy(targetPosition);
             camera.lookAt(targetPosition);
             controls.update();
-            console.log('Camera jump completed:', {
-              cameraPosition: camera.position,
-              targetPosition: controls.target,
-              planetPosition: targetPosition
-            });
           }
         };
 
@@ -212,10 +194,6 @@ export default function SolarSystem() {
             />
           ))}
         </ControlsProvider>
-
-        {/* 灯光 */}
-        <ambientLight intensity={0.3} />
-        <directionalLight position={[100, 50, 100]} intensity={0.5} />
       </Canvas>
     </div>
   );

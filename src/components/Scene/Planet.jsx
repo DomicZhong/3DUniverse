@@ -3,7 +3,6 @@ import { useFrame } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
 import { useStore } from '../../store/useStore';
 import { loadPlanetTexture } from '../../utils/textureLoader';
-import { generatePlanetTexture } from '../../utils/textureGenerator';
 import Moon from './Moon';
 import { playSoundEffect } from './AudioManager';
 import * as THREE from 'three';
@@ -13,6 +12,8 @@ export default function Planet({ data, scale = 1 }) {
   const groupRef = useRef();
   const rotationGroupRef = useRef();
   const [texture, setTexture] = useState(null);
+  const [nightTexture, setNightTexture] = useState(null);
+  const [customMaterial, setCustomMaterial] = useState(null);
   const {
     isPaused,
     timeSpeed,
@@ -48,23 +49,45 @@ export default function Planet({ data, scale = 1 }) {
   };
 
   useEffect(() => {
-    // 加载NASA真实纹理
-    loadPlanetTexture(data.id, true)
+    // 加载NASA真实纹理，不使用 fallback
+    loadPlanetTexture(data.id, false)
       .then(loadedTexture => {
         setTexture(loadedTexture);
+
+        // 如果是地球，加载夜晚纹理
+        if (data.id === 'earth') {
+          loadPlanetTexture('earth_night', false)
+            .then(nightTex => {
+              setNightTexture(nightTex);
+            })
+            .catch(error => {
+              console.error('Failed to load earth night texture:', error);
+            });
+        }
       })
-      // 当纹理加载失败时的错误处理回调
-// 使用程序化生成的纹理作为备选方案，确保即使纹理文件缺失也能正常显示行星
-.catch(error => {
+      .catch(error => {
         console.error(`Failed to load texture for ${data.name}:`, error);
-        // 使用程序化纹理作为备选
-        const canvas = generatePlanetTexture(data.id, 1024);
-        const fallbackTexture = new THREE.CanvasTexture(canvas);
-        setTexture(fallbackTexture);
       });
   }, [data.id]);
 
   useFrame((_state, delta) => {
+    // 更新地球材质的太阳方向（对于地球）
+    if (customMaterial && data.id === 'earth' && groupRef.current) {
+      // 地球位置：(orbitRadius, 0, 0) 在旋转的 group 中
+      // 太阳在原点 (0,0,0)
+      // 从地球指向太阳的方向 = 太阳位置 - 地球位置 = -地球位置
+
+      // 计算地球当前的世界位置
+      const earthPos = new THREE.Vector3(orbitRadius, 0, 0);
+      earthPos.applyMatrix4(groupRef.current.matrixWorld);
+
+      // 从地球指向太阳的方向
+      const sunDirection = new THREE.Vector3(0, 0, 0).sub(earthPos).normalize();
+
+      // 更新 shader 中的太阳方向 uniform
+      customMaterial.uniforms.sunDirection.value.copy(sunDirection);
+    }
+
     if (groupRef.current && !isPaused) {
       // 公转
       const speed = (1 / data.orbitalPeriod) * timeSpeed;
@@ -81,7 +104,75 @@ export default function Planet({ data, scale = 1 }) {
 
   const isSelected = selectedPlanet?.id === data.id;
 
+  // 创建自定义材质（地球使用昼夜混合材质）
+  useEffect(() => {
+    if (texture && data.id === 'earth' && nightTexture) {
+      const material = new THREE.ShaderMaterial({
+        uniforms: {
+          dayTexture: { value: texture },
+          nightTexture: { value: nightTexture },
+          sunDirection: { value: new THREE.Vector3(-1, 0, 0) }
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          varying vec3 vWorldPosition;
+          varying vec3 vWorldNormal;
+
+          void main() {
+            vUv = uv;
+            // 计算世界空间位置和法线
+            vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPosition.xyz;
+            vWorldNormal = normalize(mat3(modelMatrix) * normal);
+            gl_Position = projectionMatrix * viewMatrix * worldPosition;
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D dayTexture;
+          uniform sampler2D nightTexture;
+          uniform vec3 sunDirection;
+
+          varying vec2 vUv;
+          varying vec3 vWorldPosition;
+          varying vec3 vWorldNormal;
+
+          void main() {
+            // 使用 uniform 传递的太阳方向（从地球指向太阳）
+            vec3 toSun = normalize(sunDirection);
+            vec3 normal = normalize(vWorldNormal);
+
+            // 计算光照强度：法线与太阳方向的点积
+            float dotProduct = dot(normal, toSun);
+
+            // 当 dotProduct > 0 时是白天，dotProduct < 0 时是夜晚
+            // 使用 smoothstep 创建平滑过渡
+            float transition = smoothstep(-0.1, 0.1, dotProduct);
+
+            // 获取白天和夜晚纹理颜色
+            vec3 dayColor = texture2D(dayTexture, vUv).rgb;
+            vec3 nightColor = texture2D(nightTexture, vUv).rgb;
+
+            // 增加白天和夜晚纹理的亮度
+            dayColor = dayColor * 1.3;
+            nightColor = nightColor * 3.0;
+
+            // 根据光照强度混合两种纹理
+            // transition = 0 时完全是夜晚，transition = 1 时完全是白天
+            vec3 finalColor = mix(nightColor, dayColor, transition);
+
+            // 输出
+            gl_FragColor = vec4(finalColor, 1.0);
+          }
+        `
+      });
+
+      setCustomMaterial(material);
+    }
+  }, [texture, nightTexture, data.id]);
+
   if (!texture) return null; // 等待纹理加载
+  // 对于地球，需要等待夜晚纹理加载
+  if (data.id === 'earth' && !nightTexture) return null;
 
   const orbitOpacity = isSelected ? 0.8 : 0.3;
 
@@ -117,13 +208,18 @@ export default function Planet({ data, scale = 1 }) {
               userData={{ planetId: data.id, isPlanetMesh: true }}
             >
               <sphereGeometry args={[planetSize, 64, 64]} />
-              <meshStandardMaterial
-                map={texture}
-                roughness={0.6}
-                metalness={0.2}
-                emissive={new THREE.Color(data.color)}
-                emissiveIntensity={0.05}
-              />
+              {/* 地球使用自定义昼夜混合材质，其他行星使用标准材质 */}
+              {data.id === 'earth' && customMaterial ? (
+                <primitive object={customMaterial} attach="material" />
+              ) : (
+                <meshStandardMaterial
+                  map={texture}
+                  roughness={0.85}
+                  metalness={0.05}
+                  emissive={new THREE.Color(data.color)}
+                  emissiveIntensity={0.03}
+                />
+              )}
             </mesh>
 
             {/* 自转轴辅助线和方向箭头（仅在选中时显示，跟随行星自转） */}

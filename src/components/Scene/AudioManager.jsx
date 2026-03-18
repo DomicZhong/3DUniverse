@@ -12,7 +12,6 @@ export function AudioProvider({ children }) {
   // 初始化音频系统
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      console.log('AudioProvider: Initializing audio system...');
       audioRef.current = new (window.AudioContext || window.webkitAudioContext)();
 
       // 创建背景音乐音频元素
@@ -22,7 +21,6 @@ export function AudioProvider({ children }) {
       backgroundAudioRef.current.id = 'background-music';
       backgroundAudioRef.current.preload = 'auto';
 
-      console.log('AudioProvider: Audio element created:', backgroundAudioRef.current, 'src:', backgroundAudioRef.current.src);
       setIsInitialized(true);
     }
 
@@ -54,32 +52,22 @@ export function BackgroundMusic() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    console.log('BackgroundMusic - isInitialized:', isInitialized, 'backgroundAudioRef:', backgroundAudioRef?.current);
-
     if (!backgroundAudioRef.current) {
-      console.warn('backgroundAudioRef not initialized yet');
       return;
     }
 
     const audio = backgroundAudioRef.current;
-    console.log('Audio element found:', audio, 'volume:', audio.volume);
 
     // 尝试播放
     const playAudio = () => {
-      console.log('Attempting to play background music...');
       if (audioRef.current && audioRef.current.state === 'suspended') {
         audioRef.current.resume();
       }
-      audio.play().then(() => {
-        console.log('Background music started playing');
-      }).catch(err => {
-        console.log('Background music play failed:', err);
-      });
+      audio.play().catch(() => {});
     };
 
     // 用户首次交互后播放
     const handleUserInteraction = () => {
-      console.log('User interaction detected, playing music');
       playAudio();
       document.removeEventListener('click', handleUserInteraction);
       document.removeEventListener('keydown', handleUserInteraction);
