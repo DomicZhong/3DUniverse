@@ -100,11 +100,13 @@ function CameraJumper({ scale }) {
         // 如果没找到，使用计算的位置作为备用
         if (!foundTarget) {
           if (planet) {
-            const orbitRadius = 2 + Math.log10(planet.distanceFromSun) * 15;
+            const planetIndex = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'].indexOf(planet.id);
+            const orbitRadius = 3 + (planetIndex + 1) * 6 + (planetIndex * planetIndex * 0.3);
             targetPosition.set(orbitRadius, 0, 0);
           } else {
             // 月球使用固定偏移
-            const earthOrbitRadius = 2 + Math.log10(149.6) * 15;
+            const earthPlanetIndex = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'].indexOf('earth');
+            const earthOrbitRadius = 3 + (earthPlanetIndex + 1) * 6 + (earthPlanetIndex * earthPlanetIndex * 0.3);
             targetPosition.set(earthOrbitRadius + 3, 0, 0);
           }
         }

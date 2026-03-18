@@ -18,7 +18,7 @@ export const useStore = create((set) => ({
   setZoomMultiplier: (multiplier) => set({ zoomMultiplier: multiplier }),
 
   // 恒星大小
-  starSize: 1.0,
+  starSize: 3.0,
   setStarSize: (size) => set({ starSize: size }),
 
   // 恒星亮度
@@ -48,8 +48,10 @@ export const useStore = create((set) => ({
   // 问答进度
   quizScore: 0,
   currentQuestionIndex: 0,
+  currentQuizQuestions: [],
   setQuizScore: (score) => set({ quizScore: score }),
   setCurrentQuestionIndex: (index) => set({ currentQuestionIndex: index }),
+  setCurrentQuizQuestions: (questions) => set({ currentQuizQuestions: questions }),
 
   // 相机目标位置
   cameraTarget: null,

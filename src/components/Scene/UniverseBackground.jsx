@@ -80,6 +80,10 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
       const y = radius * Math.sin(phi) * Math.sin(theta);
       const z = radius * Math.cos(phi);
 
+      // 排除太阳系中心区域（原点附近80单位范围内）
+      const distanceFromCenter = Math.sqrt(x * x + y * y + z * z);
+      if (distanceFromCenter < 80) continue;
+
       positions.push(x, y, z);
 
       const brightness = 0.3 + Math.random() * 0.7;
@@ -115,12 +119,16 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
       const y = radius * Math.sin(phi) * Math.sin(theta);
       const z = radius * Math.cos(phi);
 
+      // 排除太阳系中心区域（原点附近80单位范围内）
+      const distanceFromCenter = Math.sqrt(x * x + y * y + z * z);
+      if (distanceFromCenter < 80) continue;
+
       positions.push(x, y, z);
 
       const color = nebulaColors[Math.floor(Math.random() * nebulaColors.length)];
       colors.push(color.r, color.g, color.b);
 
-      sizes.push(50 + Math.random() * 100);
+      sizes.push(25 + Math.random() * 50);
     }
 
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -167,6 +175,10 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
         const y = (Math.random() - 0.5) * 40 * (1 - progress * 0.8); // 银河盘面厚度
         const z = Math.sin(spiralAngle + randomAngle) * (radius + randomRadius);
 
+        // 排除太阳系中心区域（原点附近80单位范围内）
+        const distanceFromCenter = Math.sqrt(x * x + y * y + z * z);
+        if (distanceFromCenter < 80) continue;
+
         positions.push(x, y, z);
 
         // 颜色渐变 - 从金黄色到蓝色
@@ -185,7 +197,7 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
         colors.push(starColor.r, starColor.g, starColor.b);
 
         // 恒星大小 - 核心更大，外围更小
-        const size = (1.2 - progress * 0.8) * (0.8 + Math.random() * 0.4);
+        const size = (0.6 - progress * 0.4) * (0.4 + Math.random() * 0.2);
         sizes.push(size);
       }
     }
@@ -204,6 +216,10 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
       const y = radius * Math.sin(phi) * Math.sin(theta);
       const z = radius * Math.cos(phi);
 
+      // 排除太阳系中心区域（原点附近80单位范围内）
+      const distanceFromCenter = Math.sqrt(x * x + y * y + z * z);
+      if (distanceFromCenter < 80) continue;
+
       positions.push(x, y, z);
 
       // 核心恒星颜色 - 金黄色到白色
@@ -216,7 +232,7 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
       colors.push(r, g, b);
 
       // 核心恒星更大更亮
-      const size = (1.5 - radius / 40) * (1.2 + Math.random() * 0.8);
+      const size = (0.75 - radius / 80) * (0.6 + Math.random() * 0.4);
       sizes.push(size);
     }
 
@@ -236,13 +252,17 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
         const y = (Math.random() - 0.5) * spread * 0.3;
         const z = clusterZ + (Math.random() - 0.5) * spread;
 
+        // 排除太阳系中心区域（原点附近80单位范围内）
+        const distanceFromCenter = Math.sqrt(x * x + y * y + z * z);
+        if (distanceFromCenter < 80) continue;
+
         positions.push(x, y, z);
 
         // 恒星团颜色 - 偏蓝白色
         const brightness = 0.6 + Math.random() * 0.4;
         colors.push(brightness, brightness, brightness * 1.1);
 
-        sizes.push(0.5 + Math.random() * 0.5);
+        sizes.push(0.25 + Math.random() * 0.25);
       }
     }
 
@@ -256,6 +276,10 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
       const x = radius * Math.cos(theta) * Math.cos(phi);
       const y = radius * Math.sin(phi) * 20 * 0.3;
       const z = radius * Math.sin(theta) * Math.cos(phi);
+
+      // 排除太阳系中心区域（原点附近80单位范围内）
+      const distanceFromCenter = Math.sqrt(x * x + y * y + z * z);
+      if (distanceFromCenter < 80) continue;
 
       positions.push(x, y, z);
 
@@ -275,7 +299,7 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
         colors.push(brightness * 0.8, brightness * 0.85, brightness);
       }
 
-      sizes.push(0.3 + Math.random() * 0.7);
+      sizes.push(0.15 + Math.random() * 0.35);
     }
 
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -310,7 +334,7 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
       {/* 远场恒星背景 */}
       <points ref={starFieldRef} geometry={farStarsGeometry}>
         <pointsMaterial
-          size={1.2 * starSize}
+          size={0.6 * starSize}
           sizeAttenuation={false}
           vertexColors
           transparent
@@ -322,7 +346,7 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
       {/* 增强的银河系 */}
       <points ref={galaxyRef} geometry={galaxyGeometry}>
         <pointsMaterial
-          size={0.96 * starSize}
+          size={0.48 * starSize}
           sizeAttenuation={true}
           vertexColors
           map={starTexture}

@@ -1,6 +1,7 @@
 import { useStore } from '../../store/useStore';
 import { planetsData, moonData } from '../../data/planets';
 import { playSoundEffect } from '../Scene/AudioManager';
+import { useState } from 'react';
 
 export default function ControlPanel() {
   const {
@@ -27,10 +28,12 @@ export default function ControlPanel() {
     setStarBrightness
   } = useStore();
 
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+
   const zoomOptions = [0.5, 1, 2, 3, 5, 10];
   const thicknessOptions = [0, 1, 2, 3, 5, 10];
-  const starSizeOptions = [0.3, 0.5, 0.8, 1.0, 1.5, 2.0];
-  const starBrightnessOptions = [0.2, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0];
+  const starSizeOptions = [0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0];
+  const starBrightnessOptions = [0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0];
 
   const orbitColors = [
     { name: '灰色', value: '#333333' },
@@ -71,14 +74,41 @@ export default function ControlPanel() {
           </button>
         </div>
 
-      {/* 播放/暂停 */}
-      <div className="mb-4">
-        <button
-          onClick={() => setIsPaused(!isPaused)}
-          className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors font-semibold"
-        >
-          {isPaused ? '▶ 继续' : '⏸ 暂停'}
-        </button>
+      {/* 时间控制 */}
+      <div className="mb-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+        {/* 播放/暂停 */}
+        <div className="mb-3">
+          <button
+            onClick={() => setIsPaused(!isPaused)}
+            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors font-semibold"
+          >
+            {isPaused ? '▶ 继续' : '⏸ 暂停'}
+          </button>
+        </div>
+
+        {/* 时间速度 */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm text-gray-300">⏱️ 时间速度</label>
+            <span className="text-sm text-yellow-400 font-semibold">{timeSpeed.toFixed(1)}x</span>
+          </div>
+          <input
+            type="range"
+            min="-10"
+            max="30"
+            step="1"
+            value={Math.log10(timeSpeed) * 10}
+            onChange={(e) => setTimeSpeed(Math.pow(10, parseFloat(e.target.value) / 10))}
+            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+          />
+          <div className="flex justify-between text-xs text-gray-500 mt-1">
+            <span>0.1x</span>
+            <span>1x</span>
+            <span>10x</span>
+            <span>100x</span>
+            <span>1000x</span>
+          </div>
+        </div>
       </div>
 
       {/* 快速跳转 */}
@@ -112,138 +142,129 @@ export default function ControlPanel() {
         </div>
       </div>
 
-      {/* 时间速度 */}
+      {/* 高级设置 */}
       <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm text-gray-300">⏱️ 时间速度</label>
-          <span className="text-sm text-yellow-400 font-semibold">{timeSpeed.toFixed(1)}x</span>
-        </div>
-        <input
-          type="range"
-          min="-10"
-          max="30"
-          step="1"
-          value={Math.log10(timeSpeed) * 10}
-          onChange={(e) => setTimeSpeed(Math.pow(10, parseFloat(e.target.value) / 10))}
-          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500"
-        />
-        <div className="flex justify-between text-xs text-gray-500 mt-1">
-          <span>0.1x</span>
-          <span>1x</span>
-          <span>10x</span>
-          <span>100x</span>
-          <span>1000x</span>
-        </div>
-      </div>
+        <button
+          onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+          className="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-sm font-semibold flex items-center justify-between"
+        >
+          <span>⚙️ 高级设置</span>
+          <span>{showAdvancedSettings ? '▼' : '▶'}</span>
+        </button>
 
-      {/* 相机视角距离 */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm text-gray-300">📷 相机距离</label>
-          <span className="text-sm text-yellow-400 font-semibold">{zoomMultiplier.toFixed(1)}x</span>
-        </div>
-        <input
-          type="range"
-          min="0.5"
-          max="5"
-          step="0.1"
-          value={zoomMultiplier}
-          onChange={(e) => setZoomMultiplier(parseFloat(e.target.value))}
-          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500"
-        />
-        <div className="flex justify-between text-xs text-gray-500 mt-1">
-          <span>0x</span>
-          <span>1x</span>
-          <span>2x</span>
-          <span>3x</span>
-          <span>4x</span>
-          <span>5x</span>
-        </div>
-      </div>
+        {showAdvancedSettings && (
+          <div className="mt-2 p-3 bg-gray-800/50 rounded-lg border border-gray-700 space-y-4">
+            {/* 相机距离 */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm text-gray-300">📷 相机距离</label>
+                <span className="text-sm text-yellow-400 font-semibold">{zoomMultiplier.toFixed(1)}x</span>
+              </div>
+              <input
+                type="range"
+                min="0.5"
+                max="5"
+                step="0.1"
+                value={zoomMultiplier}
+                onChange={(e) => setZoomMultiplier(parseFloat(e.target.value))}
+                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+              />
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>0.5x</span>
+                <span>1x</span>
+                <span>2x</span>
+                <span>3x</span>
+                <span>4x</span>
+                <span>5x</span>
+              </div>
+            </div>
 
-      {/* 轨道颜色 */}
-      <div className="mb-4">
-        <label className="block text-sm text-gray-300 mb-2">🎨 轨道颜色</label>
-        <div className="flex gap-2 flex-wrap">
-          {orbitColors.map((color) => (
-            <button
-              key={color.value}
-              onClick={() => setOrbitColor(color.value)}
-              className={`px-3 py-2 rounded text-sm border-2 transition-colors ${
-                orbitColor === color.value
-                  ? 'border-white bg-gray-600'
-                  : 'border-transparent bg-gray-700 hover:bg-gray-600'
-              }`}
-              style={{
-                backgroundColor: color.value,
-                color: color.value === '#FFFFFF' ? '#000000' : '#FFFFFF'
-              }}
-              title={color.name}
-            >
-              {color.name}
-            </button>
-          ))}
-        </div>
-      </div>
+            {/* 轨道颜色 */}
+            <div>
+              <label className="block text-sm text-gray-300 mb-2">🎨 轨道颜色</label>
+              <div className="flex gap-2 flex-wrap">
+                {orbitColors.map((color) => (
+                  <button
+                    key={color.value}
+                    onClick={() => setOrbitColor(color.value)}
+                    className={`px-3 py-2 rounded text-sm border-2 transition-colors ${
+                      orbitColor === color.value
+                        ? 'border-white bg-gray-600'
+                        : 'border-transparent bg-gray-700 hover:bg-gray-600'
+                    }`}
+                    style={{
+                      backgroundColor: color.value,
+                      color: color.value === '#FFFFFF' ? '#000000' : '#FFFFFF'
+                    }}
+                    title={color.name}
+                  >
+                    {color.name}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-      {/* 轨道粗细 */}
-      <div className="mb-4">
-        <label className="block text-sm text-gray-300 mb-2">📏 轨道粗细</label>
-        <div className="flex gap-2">
-          {thicknessOptions.map((thickness) => (
-            <button
-              key={thickness}
-              onClick={() => setOrbitThickness(thickness)}
-              className={`px-4 py-2 rounded text-sm ${
-                orbitThickness === thickness
-                  ? 'bg-yellow-600 text-white'
-                  : 'bg-gray-700 hover:bg-gray-600'
-              } transition-colors`}
-            >
-              {thickness}
-            </button>
-          ))}
-        </div>
-      </div>
+            {/* 轨道粗细 */}
+            <div>
+              <label className="block text-sm text-gray-300 mb-2">📏 轨道粗细</label>
+              <div className="flex gap-2">
+                {thicknessOptions.map((thickness) => (
+                  <button
+                    key={thickness}
+                    onClick={() => setOrbitThickness(thickness)}
+                    className={`px-4 py-2 rounded text-sm ${
+                      orbitThickness === thickness
+                        ? 'bg-yellow-600 text-white'
+                        : 'bg-gray-700 hover:bg-gray-600'
+                    } transition-colors`}
+                  >
+                    {thickness}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-      {/* 恒星大小 */}
-      <div className="mb-4">
-        <label className="block text-sm text-gray-300 mb-2">✨ 恒星大小</label>
-        <div className="flex gap-2 flex-wrap">
-          {starSizeOptions.map((size) => (
-            <button
-              key={size}
-              onClick={() => setStarSize(size)}
-              className={`px-3 py-1 rounded text-sm ${
-                starSize === size
-                  ? 'bg-yellow-600 text-white'
-                  : 'bg-gray-700 hover:bg-gray-600'
-              } transition-colors`}
-            >
-              {size}x
-            </button>
-          ))}
-        </div>
-      </div>
+            {/* 恒星大小 */}
+            <div>
+              <label className="block text-sm text-gray-300 mb-2">✨ 恒星大小</label>
+              <div className="flex gap-2 flex-wrap">
+                {starSizeOptions.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setStarSize(size)}
+                    className={`px-3 py-1 rounded text-sm ${
+                      starSize === size
+                        ? 'bg-yellow-600 text-white'
+                        : 'bg-gray-700 hover:bg-gray-600'
+                    } transition-colors`}
+                  >
+                    {size}x
+                  </button>
+                ))}
+              </div>
+            </div>
 
-      {/* 恒星亮度 */}
-      <div className="mb-4">
-        <label className="block text-sm text-gray-300 mb-2">💡 恒星亮度</label>
-        <div className="flex gap-2 flex-wrap">
-          {starBrightnessOptions.map((brightness) => (
-            <button
-              key={brightness}
-              onClick={() => setStarBrightness(brightness)}
-              className={`px-3 py-1 rounded text-sm ${
-                starBrightness === brightness
-                  ? 'bg-yellow-600 text-white'
-                  : 'bg-gray-700 hover:bg-gray-600'
-              } transition-colors`}
-            >
-              {brightness}x
-            </button>
-          ))}
-        </div>
+            {/* 恒星亮度 */}
+            <div>
+              <label className="block text-sm text-gray-300 mb-2">💡 恒星亮度</label>
+              <div className="flex gap-2 flex-wrap">
+                {starBrightnessOptions.map((brightness) => (
+                  <button
+                    key={brightness}
+                    onClick={() => setStarBrightness(brightness)}
+                    className={`px-3 py-1 rounded text-sm ${
+                      starBrightness === brightness
+                        ? 'bg-yellow-600 text-white'
+                        : 'bg-gray-700 hover:bg-gray-600'
+                    } transition-colors`}
+                  >
+                    {brightness}x
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 缩放模式 */}

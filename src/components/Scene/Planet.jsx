@@ -24,10 +24,12 @@ export default function Planet({ data, scale = 1 }) {
   } = useStore();
 
   // 计算行星大小（教育模式下适当放大）
-  const planetSize = scale * 0.3 + Math.log10(data.diameter / 1000) * 0.3;
+  const educationMultiplier = scale > 1 ? 3 : 1; // 教育模式下额外放大3倍
+  const planetSize = scale * 0.3 + Math.log10(data.diameter / 1000) * 0.3 * educationMultiplier;
 
-  // 计算轨道半径（使用对数压缩，让外行星不那么远）
-  const orbitRadius = 2 + Math.log10(data.distanceFromSun) * 15;
+  // 计算轨道半径（使用指数分布，让行星间距更均匀）
+  const planetIndex = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'].indexOf(data.id);
+  const orbitRadius = 3 + (planetIndex + 1) * 6 + (planetIndex * planetIndex * 0.3);
 
   // 格式化自转速度显示
   const formatRotationSpeed = () => {
@@ -322,14 +324,6 @@ export default function Planet({ data, scale = 1 }) {
         >
           {data.name}
         </Text>
-
-        {/* 选中时的指示器 */}
-        {isSelected && (
-          <mesh position={[0, planetSize + 1.5, 0]}>
-            <sphereGeometry args={[0.1, 16, 16]} />
-            <meshBasicMaterial color="#FFD700" />
-          </mesh>
-        )}
 
         {/* 月球（仅地球有） */}
         {data.hasMoon && <Moon parentScale={planetSize} />}

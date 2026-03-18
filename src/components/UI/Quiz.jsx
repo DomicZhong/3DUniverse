@@ -1,16 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { quizQuestions } from '../../data/quiz';
 import { useStore } from '../../store/useStore';
+import { shuffle } from '../../utils/shuffle';
 
 export default function Quiz() {
-  const { showQuiz, setShowQuiz, quizScore, setQuizScore, currentQuestionIndex, setCurrentQuestionIndex } = useStore();
+  const { showQuiz, setShowQuiz, quizScore, setQuizScore, currentQuestionIndex, setCurrentQuestionIndex, currentQuizQuestions, setCurrentQuizQuestions } = useStore();
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
 
+  // 随机选择8道题目
+  useEffect(() => {
+    if (showQuiz && currentQuizQuestions.length === 0) {
+      const shuffled = shuffle([...quizQuestions]);
+      const selectedQuestions = shuffled.slice(0, 8);
+      setCurrentQuizQuestions(selectedQuestions);
+    }
+  }, [showQuiz, currentQuizQuestions.length, setCurrentQuizQuestions]);
+
   if (!showQuiz) return null;
 
-  const currentQuestion = quizQuestions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === quizQuestions.length - 1;
+  const questions = currentQuizQuestions.length > 0 ? currentQuizQuestions : quizQuestions;
+  const currentQuestion = questions[currentQuestionIndex];
+  const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
   const handleAnswer = (index) => {
     setSelectedAnswer(index);
@@ -29,6 +40,7 @@ export default function Quiz() {
       setShowQuiz(false);
       setCurrentQuestionIndex(0);
       setQuizScore(0);
+      setCurrentQuizQuestions([]);
     } else {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
@@ -39,6 +51,10 @@ export default function Quiz() {
     setQuizScore(0);
     setSelectedAnswer(null);
     setShowExplanation(false);
+    // 重新随机选择题目
+    const shuffled = shuffle([...quizQuestions]);
+    const selectedQuestions = shuffled.slice(0, 8);
+    setCurrentQuizQuestions(selectedQuestions);
   };
 
   const handleClose = () => {
@@ -47,6 +63,7 @@ export default function Quiz() {
     setQuizScore(0);
     setSelectedAnswer(null);
     setShowExplanation(false);
+    setCurrentQuizQuestions([]);
   };
 
   return (
@@ -57,7 +74,7 @@ export default function Quiz() {
           <div>
             <h2 className="text-2xl font-bold text-yellow-400">🎮 太阳系知识问答</h2>
             <p className="text-sm text-gray-400 mt-1">
-              第 {currentQuestionIndex + 1} 题 / 共 {quizQuestions.length} 题
+              第 {currentQuestionIndex + 1} 题 / 共 {questions.length} 题
             </p>
           </div>
           <button
@@ -72,7 +89,7 @@ export default function Quiz() {
         <div className="w-full bg-gray-700 rounded-full h-2 mb-6">
           <div
             className="bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}
+            style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
           />
         </div>
 
@@ -144,10 +161,10 @@ export default function Quiz() {
             <div className="bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-xl p-6 border border-green-700/30">
               <p className="text-3xl font-bold text-yellow-400 mb-2">🎉 测试完成！</p>
               <p className="text-white text-xl mb-1">
-                你的得分：{quizScore} / {quizQuestions.length}
+                你的得分：{quizScore} / {questions.length}
               </p>
               <p className="text-gray-400">
-                正确率：{Math.round((quizScore / quizQuestions.length) * 100)}%
+                正确率：{Math.round((quizScore / questions.length) * 100)}%
               </p>
             </div>
           </div>
