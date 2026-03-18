@@ -27,7 +27,6 @@ export default function ControlPanel() {
     setStarBrightness
   } = useStore();
 
-  const speedOptions = [0.1, 0.5, 1, 2, 5, 10, 20, 50];
   const zoomOptions = [0.5, 1, 2, 3, 5, 10];
   const thicknessOptions = [0, 1, 2, 3, 5, 10];
   const starSizeOptions = [0.3, 0.5, 0.8, 1.0, 1.5, 2.0];
@@ -115,21 +114,25 @@ export default function ControlPanel() {
 
       {/* 时间速度 */}
       <div className="mb-4">
-        <label className="block text-sm text-gray-300 mb-2">⏱️ 时间速度</label>
-        <div className="flex gap-2 flex-wrap">
-          {speedOptions.map((speed) => (
-            <button
-              key={speed}
-              onClick={() => setTimeSpeed(speed)}
-              className={`px-3 py-1 rounded text-sm ${
-                timeSpeed === speed
-                  ? 'bg-yellow-600 text-white'
-                  : 'bg-gray-700 hover:bg-gray-600'
-              } transition-colors`}
-            >
-              {speed}x
-            </button>
-          ))}
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm text-gray-300">⏱️ 时间速度</label>
+          <span className="text-sm text-yellow-400 font-semibold">{timeSpeed.toFixed(1)}x</span>
+        </div>
+        <input
+          type="range"
+          min="0.1"
+          max="1000"
+          step="0.1"
+          value={timeSpeed}
+          onChange={(e) => setTimeSpeed(parseFloat(e.target.value))}
+          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+        />
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>0.1x</span>
+          <span>1x</span>
+          <span>10x</span>
+          <span>100x</span>
+          <span>1000x</span>
         </div>
       </div>
 

@@ -11,6 +11,7 @@ import * as THREE from 'three';
 export default function Planet({ data, scale = 1 }) {
   const meshRef = useRef();
   const groupRef = useRef();
+  const rotationLabelRef = useRef();
   const [texture, setTexture] = useState(null);
   const {
     isPaused,
@@ -56,6 +57,13 @@ export default function Planet({ data, scale = 1 }) {
       const rotationSpeed = (1 / data.rotationPeriod) * timeSpeed;
       const direction = data.retrogradeRotation ? -1 : 1;
       meshRef.current.rotation.y += delta * rotationSpeed * 0.5 * direction;
+    }
+
+    // 让旋转速度标签保持正立，不随行星自转而倒转
+    if (rotationLabelRef.current && !isPaused) {
+      const rotationSpeed = (1 / data.rotationPeriod) * timeSpeed;
+      const direction = data.retrogradeRotation ? -1 : 1;
+      rotationLabelRef.current.rotation.y -= delta * rotationSpeed * 0.5 * direction;
     }
   });
 
@@ -103,6 +111,66 @@ export default function Planet({ data, scale = 1 }) {
               emissiveIntensity={0.05}
             />
           </mesh>
+
+          {/* 自转轴辅助线和方向箭头（仅在选中时显示，跟随行星自转） */}
+          {isSelected && (
+            <>
+              {/* 自转轴线 */}
+              <mesh>
+                <cylinderGeometry args={[0.02, 0.02, planetSize * 4, 8]} />
+                <meshBasicMaterial color="#00FF00" transparent opacity={0.7} />
+              </mesh>
+
+              {/* 北极箭头 */}
+              <mesh position={[0, planetSize * 2, 0]}>
+                <coneGeometry args={[0.15, 0.4, 8]} />
+                <meshBasicMaterial color="#00FF00" />
+              </mesh>
+
+              {/* 南极箭头 */}
+              <mesh position={[0, -planetSize * 2, 0]} rotation={[Math.PI, 0, 0]}>
+                <coneGeometry args={[0.15, 0.4, 8]} />
+                <meshBasicMaterial color="#00FF00" />
+              </mesh>
+
+              {/* 北极旋转方向指示箭头 */}
+              <group position={[0, planetSize * 2.3, 0]}>
+                <mesh rotation={[data.retrogradeRotation ? Math.PI / 2 : -Math.PI / 2, 0, 0]}>
+                  <torusGeometry args={[0.2, 0.03, 8, 16, 3]} />
+                  <meshBasicMaterial color="#FF6B6B" />
+                </mesh>
+                {/* 旋转方向小箭头 */}
+                <mesh position={[0.15, 0, 0]} rotation={[0, 0, data.retrogradeRotation ? Math.PI / 2 : -Math.PI / 2]}>
+                  <coneGeometry args={[0.05, 0.15, 4]} />
+                  <meshBasicMaterial color="#FF6B6B" />
+                </mesh>
+                {/* 速度标签 - 反向旋转以保持可读 */}
+                <Text
+                  ref={rotationLabelRef}
+                  position={[0.3, 0, 0]}
+                  fontSize={0.15}
+                  color="#FF6B6B"
+                  anchorX="left"
+                  anchorY="middle"
+                >
+                  {(1 / data.rotationPeriod).toFixed(2)}x
+                </Text>
+              </group>
+
+              {/* 南极旋转方向指示箭头 */}
+              <group position={[0, -planetSize * 2.3, 0]}>
+                <mesh rotation={[data.retrogradeRotation ? Math.PI / 2 : -Math.PI / 2, 0, 0]}>
+                  <torusGeometry args={[0.2, 0.03, 8, 16, 3]} />
+                  <meshBasicMaterial color="#FF6B6B" />
+                </mesh>
+                {/* 旋转方向小箭头 */}
+                <mesh position={[0.15, 0, 0]} rotation={[0, 0, data.retrogradeRotation ? Math.PI / 2 : -Math.PI / 2]}>
+                  <coneGeometry args={[0.05, 0.15, 4]} />
+                  <meshBasicMaterial color="#FF6B6B" />
+                </mesh>
+              </group>
+            </>
+          )}
         </group>
 
         {/* 土星环 - 需要根据行星的自转轴倾斜来调整 */}
