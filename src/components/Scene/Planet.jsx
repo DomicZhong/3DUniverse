@@ -25,7 +25,7 @@ export default function Planet({ data, scale = 1 }) {
   const planetSize = scale * 0.3 + Math.log10(data.diameter / 1000) * 0.3;
 
   // 计算轨道半径（使用对数压缩，让外行星不那么远）
-  const orbitRadius = 5 + Math.log10(data.distanceFromSun) * 15;
+  const orbitRadius = 3 + Math.log10(data.distanceFromSun) * 15;
 
   useEffect(() => {
     // 加载NASA真实纹理
@@ -33,7 +33,9 @@ export default function Planet({ data, scale = 1 }) {
       .then(loadedTexture => {
         setTexture(loadedTexture);
       })
-      .catch(error => {
+      // 当纹理加载失败时的错误处理回调
+// 使用程序化生成的纹理作为备选方案，确保即使纹理文件缺失也能正常显示行星
+.catch(error => {
         console.error(`Failed to load texture for ${data.name}:`, error);
         // 使用程序化纹理作为备选
         const canvas = generatePlanetTexture(data.id, 1024);
