@@ -30,6 +30,60 @@
 
 ## 📦 安装和运行
 
+### 前置要求
+
+在开始之前，请确保您的计算机已安装以下软件：
+
+- **Node.js** (推荐版本：18.x 或更高版本)
+- **npm** (随 Node.js 自动安装)
+
+#### 如何检查是否已安装
+
+打开终端（命令行），输入以下命令检查版本：
+
+```bash
+node -v
+npm -v
+```
+
+如果显示版本号，说明已安装。如果提示"command not found"或"不是内部或外部命令"，则需要安装。
+
+#### 安装 Node.js 和 npm
+
+**Windows 用户：**
+
+1. 访问 [Node.js 官方网站](https://nodejs.org/zh-cn/)
+2. 下载 LTS（长期支持）版本的安装包
+3. 运行安装程序，一路点击"下一步"完成安装
+4. 安装完成后，重新打开终端，输入 `node -v` 验证安装成功
+
+**macOS 用户：**
+
+方法一：使用 Homebrew（推荐）
+```bash
+brew install node
+```
+
+方法二：下载官方安装包
+1. 访问 [Node.js 官方网站](https://nodejs.org/zh-cn/)
+2. 下载 macOS 版本的安装包
+3. 双击 .pkg 文件，按照提示完成安装
+
+**Linux 用户：**
+
+使用包管理器安装：
+
+Ubuntu/Debian:
+```bash
+sudo apt update
+sudo apt install nodejs npm
+```
+
+CentOS/RHEL:
+```bash
+sudo yum install nodejs npm
+```
+
 ### 安装依赖
 
 ```bash
@@ -218,6 +272,61 @@ setTextureMode('auto');
 - 天文爱好者
 - 学校科普教育
 - 家长与孩子共同学习
+
+## ❓ 常见问题
+
+### 1. 运行 `npm install` 时出现错误
+
+**问题：** `command not found: npm` 或 `'npm' 不是内部或外部命令`
+
+**解决方案：** 说明没有安装 npm。请参考上面的"前置要求"部分安装 Node.js 和 npm。
+
+**问题：** `EACCES` 权限错误
+
+**解决方案：**
+- Linux/macOS：使用 `sudo npm install`（不推荐）或配置 npm 全局目录权限
+- Windows：以管理员身份运行终端
+
+### 2. 运行 `npm run dev` 时端口被占用
+
+**问题：** `Port 5173 is already in use`
+
+**解决方案：**
+- 关闭其他使用 5173 端口的应用
+- 或指定其他端口：`npm run dev -- --port 3000`
+
+### 3. 页面无法打开或显示空白
+
+**解决方案：**
+- 确保开发服务器正在运行
+- 检查浏览器控制台是否有错误信息（按 F12 打开开发者工具）
+- 清除浏览器缓存后刷新页面
+
+### 4. 纹理或音频文件加载失败
+
+**解决方案：**
+- 检查 `public/textures/` 和 `public/music/` 目录下是否有文件
+- 运行 `npm run download:textures` 或 `npm run download:audio` 下载资源
+- 确保网络连接正常
+
+### 5. 更新 Node.js 版本后遇到兼容性问题
+
+**解决方案：**
+- 删除 `node_modules` 文件夹和 `package-lock.json` 文件
+- 重新运行 `npm install`
+
+### 6. 如何停止开发服务器
+
+在运行开发服务器的终端中，按 `Ctrl + C` 即可停止。
+
+## 💡 学习资源
+
+如果你是第一次使用 Node.js 或 React，推荐以下学习资源：
+
+- **Node.js 官方文档**: https://nodejs.org/zh-cn/docs/
+- **React 官方文档**: https://zh-hans.react.dev/
+- **Vite 官方文档**: https://cn.vitejs.dev/
+- **Tailwind CSS 文档**: https://tailwindcss.com/docs
 
 ## 📝 待改进功能
 
