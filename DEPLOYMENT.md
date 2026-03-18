@@ -31,14 +31,17 @@ git branch -M main
 git push -u origin main
 ```
 
-#### 步骤 2：配置 GitHub Pages
+#### 步骤 2：配置 GitHub Pages（重要！）
 
 1. 进入 GitHub 仓库页面
 2. 点击 **Settings** 标签
 3. 在左侧菜单中找到 **Pages**
 4. 在 **Build and deployment** 部分：
    - **Source**: 选择 `GitHub Actions`
+   - **Build and deployment**: 如果提示需要配置，选择 "Deploy to GitHub Pages" workflow
 5. 点击 Save
+
+> ⚠️ **重要提示**：必须先在 Settings 中启用 GitHub Pages 并选择 GitHub Actions 作为 Source，否则部署会失败！
 
 #### 步骤 3：验证配置
 
@@ -54,13 +57,51 @@ git push -u origin main
 https://YOUR_USERNAME.github.io/3DUniverse/
 ```
 
-#### 自动部署设置
+#### 步骤 5：自动部署设置
 
 配置完成后，每次你推送代码到 `main` 或 `master` 分支时，GitHub Actions 会自动：
 1. 构建项目
 2. 部署到 GitHub Pages
 
 你也可以在 Actions 页面手动触发部署。
+
+---
+
+### 方案一备选：使用 gh-pages（更简单）
+
+如果上面的 GitHub Actions 方式有问题，可以使用传统的 gh-pages 方式：
+
+#### 步骤 1：安装 gh-pages 工具
+
+```bash
+npm install -D gh-pages
+```
+
+#### 步骤 2：添加部署脚本
+
+在 `package.json` 的 `scripts` 部分添加：
+
+```json
+"deploy": "gh-pages -d dist",
+"predeploy": "npm run build"
+```
+
+#### 步骤 3：部署
+
+```bash
+npm run deploy
+```
+
+这将自动构建并将 `dist` 目录部署到 GitHub Pages 的 `gh-pages` 分支。
+
+#### 步骤 4：在 GitHub Settings 中配置
+
+1. 进入仓库 → Settings → Pages
+2. Source 选择 `Deploy from a branch`
+3. Branch 选择 `gh-pages`，文件夹选择 `/ (root)`
+4. 点击 Save
+
+这种方式不需要配置 GitHub Actions，更简单但部署是手动的。
 
 ---
 
