@@ -25,7 +25,7 @@ export default function Planet({ data, scale = 1 }) {
   const planetSize = scale * 0.3 + Math.log10(data.diameter / 1000) * 0.3;
 
   // 计算轨道半径（使用对数压缩，让外行星不那么远）
-  const orbitRadius = 1 + Math.log10(data.distanceFromSun) * 10;
+  const orbitRadius = 2 + Math.log10(data.distanceFromSun) * 15;
 
   useEffect(() => {
     // 加载NASA真实纹理
