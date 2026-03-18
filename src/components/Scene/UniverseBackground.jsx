@@ -329,19 +329,6 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
         />
       </points>
 
-      {/* 银河系核心光晕 */}
-      <mesh rotation={[0, 0, THREE.MathUtils.degToRad(70)]}>
-        <ringGeometry args={[0, 60, 64]} />
-        <meshBasicMaterial
-          color="#D4AF37"
-          transparent
-          opacity={0.1}
-          side={THREE.DoubleSide}
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-        />
-      </mesh>
-
       {/* 星云云雾 */}
       <points ref={nebulaRef} geometry={createNebulaClouds()}>
         <pointsMaterial

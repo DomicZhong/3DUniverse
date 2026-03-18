@@ -90,7 +90,7 @@ export default function Moon({ parentScale = 1 }) {
               setSelectedPlanet(moonData);
               playSoundEffect('click');
             }}
-            userData={{ planetId: 'moon' }}
+            userData={{ planetId: 'moon', isPlanetMesh: true }}
           >
             <sphereGeometry args={[moonSize, 32, 32]} />
             <meshStandardMaterial

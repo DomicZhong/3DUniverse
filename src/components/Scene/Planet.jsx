@@ -11,7 +11,7 @@ import * as THREE from 'three';
 export default function Planet({ data, scale = 1 }) {
   const meshRef = useRef();
   const groupRef = useRef();
-  const rotationLabelRef = useRef();
+  const rotationGroupRef = useRef();
   const [texture, setTexture] = useState(null);
   const {
     isPaused,
@@ -27,6 +27,25 @@ export default function Planet({ data, scale = 1 }) {
 
   // 计算轨道半径（使用对数压缩，让外行星不那么远）
   const orbitRadius = 2 + Math.log10(data.distanceFromSun) * 15;
+
+  // 格式化自转速度显示
+  const formatRotationSpeed = () => {
+    const period = data.rotationPeriod;
+    if (period < 1) {
+      // 小于1天的显示小时
+      const hours = (period * 24).toFixed(1);
+      return `${hours}小时/圈`;
+    } else if (period < 7) {
+      // 小于7天的显示天
+      return `${period.toFixed(1)}天/圈`;
+    } else if (period < 30) {
+      // 小于30天的显示天
+      return `${period.toFixed(0)}天/圈`;
+    } else {
+      // 大于等于30天的显示天
+      return `${period.toFixed(0)}天/圈`;
+    }
+  };
 
   useEffect(() => {
     // 加载NASA真实纹理
@@ -53,17 +72,10 @@ export default function Planet({ data, scale = 1 }) {
     }
 
     if (meshRef.current && !isPaused) {
-      // 自转 - 考虑逆行自转
+      // 自转 - 考虑逆行自转（现在meshRef是group，所以直接旋转group）
       const rotationSpeed = (1 / data.rotationPeriod) * timeSpeed;
       const direction = data.retrogradeRotation ? -1 : 1;
       meshRef.current.rotation.y += delta * rotationSpeed * 0.5 * direction;
-    }
-
-    // 让旋转速度标签保持正立，不随行星自转而倒转
-    if (rotationLabelRef.current && !isPaused) {
-      const rotationSpeed = (1 / data.rotationPeriod) * timeSpeed;
-      const direction = data.retrogradeRotation ? -1 : 1;
-      rotationLabelRef.current.rotation.y -= delta * rotationSpeed * 0.5 * direction;
     }
   });
 
@@ -91,85 +103,92 @@ export default function Planet({ data, scale = 1 }) {
       </mesh>
 
       {/* 行星 */}
-      <group position={[orbitRadius, 0, 0]}>
+      <group position={[orbitRadius, 0, 0]} userData={{ planetId: data.id }}>
         {/* 行星旋转组 - 应用自转轴倾斜 */}
         <group rotation={[THREE.MathUtils.degToRad(data.axialTilt || 0), 0, 0]}>
-          <mesh
-            ref={meshRef}
-            onClick={() => {
-              setSelectedPlanet(data);
-              playSoundEffect('click');
-            }}
-            userData={{ planetId: data.id }}
-          >
-            <sphereGeometry args={[planetSize, 64, 64]} />
-            <meshStandardMaterial
-              map={texture}
-              roughness={0.6}
-              metalness={0.2}
-              emissive={new THREE.Color(data.color)}
-              emissiveIntensity={0.05}
-            />
-          </mesh>
+          {/* 行星自转容器 */}
+          <group ref={rotationGroupRef}>
+            <mesh
+              ref={meshRef}
+              onClick={() => {
+                setSelectedPlanet(data);
+                playSoundEffect('click');
+              }}
+              userData={{ planetId: data.id, isPlanetMesh: true }}
+            >
+              <sphereGeometry args={[planetSize, 64, 64]} />
+              <meshStandardMaterial
+                map={texture}
+                roughness={0.6}
+                metalness={0.2}
+                emissive={new THREE.Color(data.color)}
+                emissiveIntensity={0.05}
+              />
+            </mesh>
 
-          {/* 自转轴辅助线和方向箭头（仅在选中时显示，跟随行星自转） */}
+            {/* 自转轴辅助线和方向箭头（仅在选中时显示，跟随行星自转） */}
+            {isSelected && (
+              <>
+                {/* 自转轴线 */}
+                <mesh>
+                  <cylinderGeometry args={[0.02, 0.02, planetSize * 4, 8]} />
+                  <meshBasicMaterial color="#00FF00" transparent opacity={0.7} />
+                </mesh>
+
+                {/* 北极箭头 */}
+                <mesh position={[0, planetSize * 2, 0]}>
+                  <coneGeometry args={[0.15, 0.4, 8]} />
+                  <meshBasicMaterial color="#00FF00" />
+                </mesh>
+
+                {/* 南极箭头 */}
+                <mesh position={[0, -planetSize * 2, 0]} rotation={[Math.PI, 0, 0]}>
+                  <coneGeometry args={[0.15, 0.4, 8]} />
+                  <meshBasicMaterial color="#00FF00" />
+                </mesh>
+
+                {/* 北极旋转方向指示箭头 */}
+                <group position={[0, planetSize * 2.3, 0]}>
+                  {/* 正常自转：逆时针，逆行自转：顺时针 */}
+                  <mesh rotation={[data.retrogradeRotation ? -Math.PI / 2 : Math.PI / 2, 0, 0]}>
+                    <torusGeometry args={[0.2, 0.03, 8, 16, 3]} />
+                    <meshBasicMaterial color="#FF6B6B" />
+                  </mesh>
+                  {/* 旋转方向小箭头 */}
+                  <mesh position={[0.15, 0, 0]} rotation={[0, 0, data.retrogradeRotation ? -Math.PI / 4 : Math.PI / 4]}>
+                    <coneGeometry args={[0.05, 0.15, 4]} />
+                    <meshBasicMaterial color="#FF6B6B" />
+                  </mesh>
+                </group>
+
+                {/* 南极旋转方向指示箭头 */}
+                <group position={[0, -planetSize * 2.3, 0]}>
+                  {/* 从南极看：正常自转为顺时针，逆行自转为逆时针 */}
+                  <mesh rotation={[data.retrogradeRotation ? Math.PI / 2 : -Math.PI / 2, 0, 0]}>
+                    <torusGeometry args={[0.2, 0.03, 8, 16, 3]} />
+                    <meshBasicMaterial color="#FF6B6B" />
+                  </mesh>
+                  {/* 旋转方向小箭头 */}
+                  <mesh position={[0.15, 0, 0]} rotation={[0, 0, data.retrogradeRotation ? Math.PI / 4 : -Math.PI / 4]}>
+                    <coneGeometry args={[0.05, 0.15, 4]} />
+                    <meshBasicMaterial color="#FF6B6B" />
+                  </mesh>
+                </group>
+              </>
+            )}
+          </group>
+
+          {/* 速度标签 - 放在自转容器外，不跟随自转 */}
           {isSelected && (
-            <>
-              {/* 自转轴线 */}
-              <mesh>
-                <cylinderGeometry args={[0.02, 0.02, planetSize * 4, 8]} />
-                <meshBasicMaterial color="#00FF00" transparent opacity={0.7} />
-              </mesh>
-
-              {/* 北极箭头 */}
-              <mesh position={[0, planetSize * 2, 0]}>
-                <coneGeometry args={[0.15, 0.4, 8]} />
-                <meshBasicMaterial color="#00FF00" />
-              </mesh>
-
-              {/* 南极箭头 */}
-              <mesh position={[0, -planetSize * 2, 0]} rotation={[Math.PI, 0, 0]}>
-                <coneGeometry args={[0.15, 0.4, 8]} />
-                <meshBasicMaterial color="#00FF00" />
-              </mesh>
-
-              {/* 北极旋转方向指示箭头 */}
-              <group position={[0, planetSize * 2.3, 0]}>
-                <mesh rotation={[data.retrogradeRotation ? Math.PI / 2 : -Math.PI / 2, 0, 0]}>
-                  <torusGeometry args={[0.2, 0.03, 8, 16, 3]} />
-                  <meshBasicMaterial color="#FF6B6B" />
-                </mesh>
-                {/* 旋转方向小箭头 */}
-                <mesh position={[0.15, 0, 0]} rotation={[0, 0, data.retrogradeRotation ? Math.PI / 2 : -Math.PI / 2]}>
-                  <coneGeometry args={[0.05, 0.15, 4]} />
-                  <meshBasicMaterial color="#FF6B6B" />
-                </mesh>
-                {/* 速度标签 - 反向旋转以保持可读 */}
-                <Text
-                  ref={rotationLabelRef}
-                  position={[0.3, 0, 0]}
-                  fontSize={0.15}
-                  color="#FF6B6B"
-                  anchorX="left"
-                  anchorY="middle"
-                >
-                  {(1 / data.rotationPeriod).toFixed(2)}x
-                </Text>
-              </group>
-
-              {/* 南极旋转方向指示箭头 */}
-              <group position={[0, -planetSize * 2.3, 0]}>
-                <mesh rotation={[data.retrogradeRotation ? Math.PI / 2 : -Math.PI / 2, 0, 0]}>
-                  <torusGeometry args={[0.2, 0.03, 8, 16, 3]} />
-                  <meshBasicMaterial color="#FF6B6B" />
-                </mesh>
-                {/* 旋转方向小箭头 */}
-                <mesh position={[0.15, 0, 0]} rotation={[0, 0, data.retrogradeRotation ? Math.PI / 2 : -Math.PI / 2]}>
-                  <coneGeometry args={[0.05, 0.15, 4]} />
-                  <meshBasicMaterial color="#FF6B6B" />
-                </mesh>
-              </group>
-            </>
+            <Text
+              position={[0.4, planetSize * 2.3, 0]}
+              fontSize={0.12}
+              color="#FF6B6B"
+              anchorX="left"
+              anchorY="middle"
+            >
+              {formatRotationSpeed()}
+            </Text>
           )}
         </group>
 
