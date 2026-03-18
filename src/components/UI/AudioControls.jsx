@@ -1,8 +1,10 @@
 import { useState, useEffect, useContext } from 'react';
 import { BackgroundMusic, AudioContext } from '../Scene/AudioManager';
+import { useStore } from '../../store/useStore';
 
 export default function AudioControls() {
   const { backgroundAudioRef, isInitialized } = useContext(AudioContext);
+  const { showAudioPanel, setShowAudioPanel } = useStore();
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.3);
 
@@ -53,9 +55,25 @@ export default function AudioControls() {
   return (
     <>
       <BackgroundMusic />
-      <div className="fixed bottom-4 right-4 bg-gray-900/90 backdrop-blur-md rounded-xl p-4 text-white shadow-xl border border-gray-700">
+      {/* 折叠按钮 */}
+      <button
+        onClick={() => setShowAudioPanel(!showAudioPanel)}
+        className={`fixed bottom-4 right-4 z-50 p-2 bg-gray-900/90 backdrop-blur-md rounded-lg border border-gray-700 text-white hover:bg-gray-800 transition-all ${
+          showAudioPanel ? 'hidden' : 'block'
+        }`}
+        title="显示音量控制"
+      >
+        🔊
+      </button>
+
+      {/* 主面板 */}
+      <div
+        className={`fixed bottom-4 right-4 bg-gray-900/90 backdrop-blur-md rounded-xl shadow-xl border border-gray-700 text-white transition-all duration-300 ${
+          showAudioPanel ? 'p-4' : 'opacity-0 pointer-events-none'
+        }`}
+      >
         <div className="flex items-center gap-3">
-          {/* 音量按钮 */}
+          {/* 静音按钮 */}
           <button
             onClick={toggleMute}
             className="p-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
@@ -81,6 +99,15 @@ export default function AudioControls() {
 
           {/* 音量数值 */}
           <span className="text-xs text-gray-400 w-8">{Math.round(volume * 100)}%</span>
+
+          {/* 隐藏按钮 */}
+          <button
+            onClick={() => setShowAudioPanel(false)}
+            className="p-1 hover:bg-gray-700 rounded transition-colors"
+            title="隐藏面板"
+          >
+            ✕
+          </button>
         </div>
       </div>
     </>

@@ -18,7 +18,9 @@ export default function ControlPanel() {
     setOrbitThickness,
     showQuiz,
     setShowQuiz,
-    setCameraTarget
+    setCameraTarget,
+    showControlPanel,
+    setShowControlPanel
   } = useStore();
 
   const speedOptions = [0.1, 0.5, 1, 2, 5, 10, 20, 50];
@@ -35,8 +37,34 @@ export default function ControlPanel() {
   ];
 
   return (
-    <div className="fixed top-4 left-4 bg-gray-900/90 backdrop-blur-md rounded-xl p-4 text-white shadow-xl border border-gray-700 max-h-[90vh] overflow-y-auto">
-      <h3 className="text-lg font-bold mb-4 text-yellow-400">控制面板</h3>
+    <>
+      {/* 折叠按钮 */}
+      <button
+        onClick={() => setShowControlPanel(!showControlPanel)}
+        className={`fixed top-4 left-4 z-50 p-2 bg-gray-900/90 backdrop-blur-md rounded-lg border border-gray-700 text-white hover:bg-gray-800 transition-all ${
+          showControlPanel ? 'hidden' : 'block'
+        }`}
+        title="显示控制面板"
+      >
+        ⚙️
+      </button>
+
+      {/* 主面板 */}
+      <div
+        className={`fixed top-4 left-4 bg-gray-900/90 backdrop-blur-md rounded-xl shadow-xl border border-gray-700 text-white transition-all duration-300 ${
+          showControlPanel ? 'max-h-[90vh] overflow-y-auto p-4' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-yellow-400">控制面板</h3>
+          <button
+            onClick={() => setShowControlPanel(false)}
+            className="p-1 hover:bg-gray-700 rounded transition-colors"
+            title="隐藏面板"
+          >
+            ✕
+          </button>
+        </div>
 
       {/* 播放/暂停 */}
       <div className="mb-4">
@@ -198,6 +226,7 @@ export default function ControlPanel() {
       >
         🎮 知识问答
       </button>
-    </div>
+      </div>
+    </>
   );
 }

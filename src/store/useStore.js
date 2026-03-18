@@ -46,4 +46,12 @@ export const useStore = create((set) => ({
   // 相机目标位置
   cameraTarget: null,
   setCameraTarget: (target) => set({ cameraTarget: target }),
+
+  // 控制面板显示状态
+  showControlPanel: true,
+  setShowControlPanel: (show) => set({ showControlPanel: show }),
+
+  // 音量面板显示状态
+  showAudioPanel: true,
+  setShowAudioPanel: (show) => set({ showAudioPanel: show }),
 }));
