@@ -1,9 +1,10 @@
 import { useRef, useEffect, createContext, useContext, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls, Stars, PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { planetsData, moonData } from '../../data/planets';
 import Sun from './Sun';
 import Planet from './Planet';
+import UniverseBackground from './UniverseBackground';
 import { useStore } from '../../store/useStore';
 import * as THREE from 'three';
 
@@ -129,7 +130,7 @@ function CameraJumper({ scale }) {
 }
 
 export default function SolarSystem() {
-  const { scaleMode } = useStore();
+  const { scaleMode, starSize, starBrightness } = useStore();
   const scale = scaleMode === 'educational' ? 2 : 1;
 
   return (
@@ -138,16 +139,8 @@ export default function SolarSystem() {
         {/* 摄像机 */}
         <PerspectiveCamera makeDefault position={[0, 30, 50]} fov={60} />
 
-        {/* 星空背景 */}
-        <Stars
-          radius={300}
-          depth={50}
-          count={5000}
-          factor={4}
-          saturation={0}
-          fade
-          speed={1}
-        />
+        {/* 宇宙背景 */}
+        <UniverseBackground starSize={starSize} starBrightness={starBrightness} />
 
         {/* 轨道控制器和提供者 */}
         <ControlsProvider>

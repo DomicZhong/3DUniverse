@@ -19,7 +19,7 @@ export default function Welcome() {
           <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 mb-2">
             探索太阳系
           </h1>
-          <p className="text-gray-400 text-lg">9-12岁儿童宇宙学习之旅</p>
+          <p className="text-gray-400 text-lg">儿童宇宙学习之旅</p>
         </div>
 
         {/* 介绍 */}

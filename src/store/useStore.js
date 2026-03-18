@@ -17,6 +17,14 @@ export const useStore = create((set) => ({
   zoomMultiplier: 1,
   setZoomMultiplier: (multiplier) => set({ zoomMultiplier: multiplier }),
 
+  // 恒星大小
+  starSize: 1.0,
+  setStarSize: (size) => set({ starSize: size }),
+
+  // 恒星亮度
+  starBrightness: 1.0,
+  setStarBrightness: (brightness) => set({ starBrightness: brightness }),
+
   // 轨道颜色
   orbitColor: '#FFFFFF',
   setOrbitColor: (color) => set({ orbitColor: color }),

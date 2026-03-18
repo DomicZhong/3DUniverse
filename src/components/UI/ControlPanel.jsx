@@ -20,12 +20,18 @@ export default function ControlPanel() {
     setShowQuiz,
     setCameraTarget,
     showControlPanel,
-    setShowControlPanel
+    setShowControlPanel,
+    starSize,
+    setStarSize,
+    starBrightness,
+    setStarBrightness
   } = useStore();
 
   const speedOptions = [0.1, 0.5, 1, 2, 5, 10, 20, 50];
   const zoomOptions = [0.5, 1, 2, 3, 5, 10];
   const thicknessOptions = [0, 1, 2, 3, 5, 10];
+  const starSizeOptions = [0.3, 0.5, 0.8, 1.0, 1.5, 2.0];
+  const starBrightnessOptions = [0.2, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0];
 
   const orbitColors = [
     { name: '灰色', value: '#333333' },
@@ -187,6 +193,46 @@ export default function ControlPanel() {
               } transition-colors`}
             >
               {thickness}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 恒星大小 */}
+      <div className="mb-4">
+        <label className="block text-sm text-gray-300 mb-2">✨ 恒星大小</label>
+        <div className="flex gap-2 flex-wrap">
+          {starSizeOptions.map((size) => (
+            <button
+              key={size}
+              onClick={() => setStarSize(size)}
+              className={`px-3 py-1 rounded text-sm ${
+                starSize === size
+                  ? 'bg-yellow-600 text-white'
+                  : 'bg-gray-700 hover:bg-gray-600'
+              } transition-colors`}
+            >
+              {size}x
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 恒星亮度 */}
+      <div className="mb-4">
+        <label className="block text-sm text-gray-300 mb-2">💡 恒星亮度</label>
+        <div className="flex gap-2 flex-wrap">
+          {starBrightnessOptions.map((brightness) => (
+            <button
+              key={brightness}
+              onClick={() => setStarBrightness(brightness)}
+              className={`px-3 py-1 rounded text-sm ${
+                starBrightness === brightness
+                  ? 'bg-yellow-600 text-white'
+                  : 'bg-gray-700 hover:bg-gray-600'
+              } transition-colors`}
+            >
+              {brightness}x
             </button>
           ))}
         </div>
