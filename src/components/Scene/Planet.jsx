@@ -50,9 +50,10 @@ export default function Planet({ data, scale = 1 }) {
     }
 
     if (meshRef.current && !isPaused) {
-      // 自转
+      // 自转 - 考虑逆行自转
       const rotationSpeed = (1 / data.rotationPeriod) * timeSpeed;
-      meshRef.current.rotation.y += delta * rotationSpeed * 0.5;
+      const direction = data.retrogradeRotation ? -1 : 1;
+      meshRef.current.rotation.y += delta * rotationSpeed * 0.5 * direction;
     }
   });
 
@@ -81,27 +82,30 @@ export default function Planet({ data, scale = 1 }) {
 
       {/* 行星 */}
       <group position={[orbitRadius, 0, 0]}>
-        <mesh
-          ref={meshRef}
-          onClick={() => {
-            setSelectedPlanet(data);
-            playSoundEffect('click');
-          }}
-          userData={{ planetId: data.id }}
-        >
-          <sphereGeometry args={[planetSize, 64, 64]} />
-          <meshStandardMaterial
-            map={texture}
-            roughness={0.6}
-            metalness={0.2}
-            emissive={new THREE.Color(data.color)}
-            emissiveIntensity={0.05}
-          />
-        </mesh>
+        {/* 行星旋转组 - 应用自转轴倾斜 */}
+        <group rotation={[THREE.MathUtils.degToRad(data.axialTilt || 0), 0, 0]}>
+          <mesh
+            ref={meshRef}
+            onClick={() => {
+              setSelectedPlanet(data);
+              playSoundEffect('click');
+            }}
+            userData={{ planetId: data.id }}
+          >
+            <sphereGeometry args={[planetSize, 64, 64]} />
+            <meshStandardMaterial
+              map={texture}
+              roughness={0.6}
+              metalness={0.2}
+              emissive={new THREE.Color(data.color)}
+              emissiveIntensity={0.05}
+            />
+          </mesh>
+        </group>
 
-        {/* 土星环 */}
+        {/* 土星环 - 需要根据行星的自转轴倾斜来调整 */}
         {data.hasRings && (
-          <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <mesh rotation={[Math.PI / 2, 0, THREE.MathUtils.degToRad(26.7)]}>
             <ringGeometry args={[planetSize * 1.5, planetSize * 2.2, 64]} />
             <meshBasicMaterial
               color="#C9B896"
@@ -112,7 +116,7 @@ export default function Planet({ data, scale = 1 }) {
           </mesh>
         )}
 
-        {/* 行星名称标签 */}
+        {/* 行星名称标签 - 不跟随自转轴倾斜 */}
         <Text
           position={[0, planetSize + 0.5, 0]}
           fontSize={0.4}

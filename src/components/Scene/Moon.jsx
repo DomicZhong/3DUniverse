@@ -82,21 +82,24 @@ export default function Moon({ parentScale = 1 }) {
 
       {/* 月球 */}
       <group position={[orbitRadius, 0, 0]}>
-        <mesh
-          ref={meshRef}
-          onClick={() => {
-            setSelectedPlanet(moonData);
-            playSoundEffect('click');
-          }}
-          userData={{ planetId: 'moon' }}
-        >
-          <sphereGeometry args={[moonSize, 32, 32]} />
-          <meshStandardMaterial
-            map={texture}
-            roughness={0.9}
-            metalness={0.1}
-          />
-        </mesh>
+        {/* 月球旋转组 - 应用自转轴倾斜 */}
+        <group rotation={[THREE.MathUtils.degToRad(moonData.axialTilt || 0), 0, 0]}>
+          <mesh
+            ref={meshRef}
+            onClick={() => {
+              setSelectedPlanet(moonData);
+              playSoundEffect('click');
+            }}
+            userData={{ planetId: 'moon' }}
+          >
+            <sphereGeometry args={[moonSize, 32, 32]} />
+            <meshStandardMaterial
+              map={texture}
+              roughness={0.9}
+              metalness={0.1}
+            />
+          </mesh>
+        </group>
 
         {/* 月球名称标签 */}
         <Text
