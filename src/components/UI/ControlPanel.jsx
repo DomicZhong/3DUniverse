@@ -136,23 +136,28 @@ export default function ControlPanel() {
         </div>
       </div>
 
-      {/* 缩放倍数 */}
+      {/* 相机视角距离 */}
       <div className="mb-4">
-        <label className="block text-sm text-gray-300 mb-2">🔍 缩放倍数</label>
-        <div className="flex gap-2 flex-wrap">
-          {zoomOptions.map((zoom) => (
-            <button
-              key={zoom}
-              onClick={() => setZoomMultiplier(zoom)}
-              className={`px-3 py-1 rounded text-sm ${
-                zoomMultiplier === zoom
-                  ? 'bg-yellow-600 text-white'
-                  : 'bg-gray-700 hover:bg-gray-600'
-              } transition-colors`}
-            >
-              {zoom}x
-            </button>
-          ))}
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm text-gray-300">📷 相机距离</label>
+          <span className="text-sm text-yellow-400 font-semibold">{zoomMultiplier.toFixed(1)}x</span>
+        </div>
+        <input
+          type="range"
+          min="0.5"
+          max="5"
+          step="0.1"
+          value={zoomMultiplier}
+          onChange={(e) => setZoomMultiplier(parseFloat(e.target.value))}
+          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+        />
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>0x</span>
+          <span>1x</span>
+          <span>2x</span>
+          <span>3x</span>
+          <span>4x</span>
+          <span>5x</span>
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -285,8 +285,12 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
     return geometry;
   };
 
-  const starTexture = createStarTexture();
-  const nebulaTexture = createNebulaTexture();
+  // 使用 useMemo 缓存纹理和 geometry，避免重复创建
+  const starTexture = useMemo(() => createStarTexture(), []);
+  const nebulaTexture = useMemo(() => createNebulaTexture(), []);
+  const farStarsGeometry = useMemo(() => createFarStars(), []);
+  const galaxyGeometry = useMemo(() => createGalaxy(), []);
+  const nebulaGeometry = useMemo(() => createNebulaClouds(), []);
 
   // 缓慢旋转背景
   useFrame((_state, delta) => {
@@ -304,7 +308,7 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
   return (
     <group>
       {/* 远场恒星背景 */}
-      <points ref={starFieldRef} geometry={createFarStars()}>
+      <points ref={starFieldRef} geometry={farStarsGeometry}>
         <pointsMaterial
           size={1.2 * starSize}
           sizeAttenuation={false}
@@ -316,7 +320,7 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
       </points>
 
       {/* 增强的银河系 */}
-      <points ref={galaxyRef} geometry={createGalaxy()}>
+      <points ref={galaxyRef} geometry={galaxyGeometry}>
         <pointsMaterial
           size={0.96 * starSize}
           sizeAttenuation={true}
@@ -330,7 +334,7 @@ export default function UniverseBackground({ starSize = 1.0, starBrightness = 1.
       </points>
 
       {/* 星云云雾 */}
-      <points ref={nebulaRef} geometry={createNebulaClouds()}>
+      <points ref={nebulaRef} geometry={nebulaGeometry}>
         <pointsMaterial
           size={120}
           sizeAttenuation={true}

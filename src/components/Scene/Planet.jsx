@@ -94,11 +94,11 @@ export default function Planet({ data, scale = 1 }) {
       groupRef.current.rotation.y += delta * speed * 0.5;
     }
 
-    if (meshRef.current && !isPaused) {
-      // 自转 - 考虑逆行自转（现在meshRef是group，所以直接旋转group）
+    if (rotationGroupRef.current && !isPaused) {
+      // 自转 - 考虑逆行自转（应用在rotationGroupRef上，这样红色箭头也会跟着转）
       const rotationSpeed = (1 / data.rotationPeriod) * timeSpeed;
       const direction = data.retrogradeRotation ? -1 : 1;
-      meshRef.current.rotation.y += delta * rotationSpeed * 0.5 * direction;
+      rotationGroupRef.current.rotation.y += delta * rotationSpeed * 0.5 * direction;
     }
   });
 
@@ -195,34 +195,9 @@ export default function Planet({ data, scale = 1 }) {
 
       {/* 行星 */}
       <group position={[orbitRadius, 0, 0]} userData={{ planetId: data.id }}>
-        {/* 行星旋转组 - 应用自转轴倾斜 */}
-        <group rotation={[THREE.MathUtils.degToRad(data.axialTilt || 0), 0, 0]}>
-          {/* 行星自转容器 */}
-          <group ref={rotationGroupRef}>
-            <mesh
-              ref={meshRef}
-              onClick={() => {
-                setSelectedPlanet(data);
-                playSoundEffect('click');
-              }}
-              userData={{ planetId: data.id, isPlanetMesh: true }}
-            >
-              <sphereGeometry args={[planetSize, 64, 64]} />
-              {/* 地球使用自定义昼夜混合材质，其他行星使用标准材质 */}
-              {data.id === 'earth' && customMaterial ? (
-                <primitive object={customMaterial} attach="material" />
-              ) : (
-                <meshStandardMaterial
-                  map={texture}
-                  roughness={0.85}
-                  metalness={0.05}
-                  emissive={new THREE.Color(data.color)}
-                  emissiveIntensity={0.03}
-                />
-              )}
-            </mesh>
-
-            {/* 自转轴辅助线和方向箭头（仅在选中时显示，跟随行星自转） */}
+          {/* 行星旋转组 - 应用自转轴倾斜 */}
+          <group rotation={[THREE.MathUtils.degToRad(data.axialTilt || 0), 0, 0]}>
+            {/* 自转轴辅助线和方向箭头（仅在选中时显示，不跟随行星自转） */}
             {isSelected && (
               <>
                 {/* 自转轴线 */}
@@ -231,48 +206,82 @@ export default function Planet({ data, scale = 1 }) {
                   <meshBasicMaterial color="#00FF00" transparent opacity={0.7} />
                 </mesh>
 
-                {/* 北极箭头 */}
-                <mesh position={[0, planetSize * 2, 0]}>
-                  <coneGeometry args={[0.15, 0.4, 8]} />
-                  <meshBasicMaterial color="#00FF00" />
-                </mesh>
-
-                {/* 南极箭头 */}
-                <mesh position={[0, -planetSize * 2, 0]} rotation={[Math.PI, 0, 0]}>
-                  <coneGeometry args={[0.15, 0.4, 8]} />
-                  <meshBasicMaterial color="#00FF00" />
-                </mesh>
-
-                {/* 北极旋转方向指示箭头 */}
-                <group position={[0, planetSize * 2.3, 0]}>
-                  {/* 正常自转：逆时针，逆行自转：顺时针 */}
-                  <mesh rotation={[data.retrogradeRotation ? -Math.PI / 2 : Math.PI / 2, 0, 0]}>
-                    <torusGeometry args={[0.2, 0.03, 8, 16, 3]} />
-                    <meshBasicMaterial color="#FF6B6B" />
-                  </mesh>
-                  {/* 旋转方向小箭头 */}
-                  <mesh position={[0.15, 0, 0]} rotation={[0, 0, data.retrogradeRotation ? -Math.PI / 4 : Math.PI / 4]}>
-                    <coneGeometry args={[0.05, 0.15, 4]} />
-                    <meshBasicMaterial color="#FF6B6B" />
+                {/* 北极箭头 - 指示自转轴方向（向上） */}
+                <group position={[0, planetSize * 2, 0]}>
+                  <mesh>
+                    <coneGeometry args={[0.15, 0.4, 8]} />
+                    <meshBasicMaterial color="#00FF00" />
                   </mesh>
                 </group>
 
-                {/* 南极旋转方向指示箭头 */}
-                <group position={[0, -planetSize * 2.3, 0]}>
-                  {/* 从南极看：正常自转为顺时针，逆行自转为逆时针 */}
-                  <mesh rotation={[data.retrogradeRotation ? Math.PI / 2 : -Math.PI / 2, 0, 0]}>
-                    <torusGeometry args={[0.2, 0.03, 8, 16, 3]} />
-                    <meshBasicMaterial color="#FF6B6B" />
-                  </mesh>
-                  {/* 旋转方向小箭头 */}
-                  <mesh position={[0.15, 0, 0]} rotation={[0, 0, data.retrogradeRotation ? Math.PI / 4 : -Math.PI / 4]}>
-                    <coneGeometry args={[0.05, 0.15, 4]} />
-                    <meshBasicMaterial color="#FF6B6B" />
+                {/* 南极箭头 - 指示自转轴方向（向下） */}
+                <group position={[0, -planetSize * 2, 0]} rotation={[Math.PI, 0, 0]}>
+                  <mesh>
+                    <coneGeometry args={[0.15, 0.4, 8]} />
+                    <meshBasicMaterial color="#00FF00" />
                   </mesh>
                 </group>
               </>
             )}
-          </group>
+
+            {/* 行星自转容器 */}
+            <group ref={rotationGroupRef}>
+              <mesh
+                ref={meshRef}
+                onClick={() => {
+                  setSelectedPlanet(data);
+                  playSoundEffect('click');
+                }}
+                userData={{ planetId: data.id, isPlanetMesh: true }}
+              >
+                <sphereGeometry args={[planetSize, 64, 64]} />
+                {/* 地球使用自定义昼夜混合材质，其他行星使用标准材质 */}
+                {data.id === 'earth' && customMaterial ? (
+                  <primitive object={customMaterial} attach="material" />
+                ) : (
+                  <meshStandardMaterial
+                    map={texture}
+                    roughness={0.85}
+                    metalness={0.05}
+                    emissive={new THREE.Color(data.color)}
+                    emissiveIntensity={0.03}
+                  />
+                )}
+              </mesh>
+
+              {/* 旋转方向指示箭头（跟随行星自转） */}
+              {isSelected && (
+                <>
+                  {/* 北极旋转方向指示箭头 */}
+                  <group position={[0, planetSize * 2.3, 0]}>
+                    {/* 圆弧跟随行星自转 */}
+                    <mesh rotation={[Math.PI / 2, 0, 0]}>
+                      <torusGeometry args={[0.2, 0.03, 8, 16, 3]} />
+                      <meshBasicMaterial color="#FF6B6B" />
+                    </mesh>
+                    {/* 方向箭头：指向自转方向，使用三角形 */}
+                    <mesh position={[0.2, 0, 0.08]} rotation={[Math.PI / 2, 0, -Math.PI / 2]}>
+                      <coneGeometry args={[0.06, 0.12, 3]} />
+                      <meshBasicMaterial color="#FF6B6B" />
+                    </mesh>
+                  </group>
+
+                  {/* 南极旋转方向指示箭头 */}
+                  <group position={[0, -planetSize * 2.3, 0]}>
+                    {/* 圆弧跟随行星自转 - 从南极看也是逆时针 */}
+                    <mesh rotation={[-Math.PI / 2, Math.PI, 0]}>
+                      <torusGeometry args={[0.2, 0.03, 8, 16, 3]} />
+                      <meshBasicMaterial color="#FF6B6B" />
+                    </mesh>
+                    {/* 方向箭头：指向自转方向，使用三角形 */}
+                    <mesh position={[-0.2, 0, 0.08]} rotation={[Math.PI / 2, 0, Math.PI / 2]}>
+                      <coneGeometry args={[0.06, 0.12, 3]} />
+                      <meshBasicMaterial color="#FF6B6B" />
+                    </mesh>
+                  </group>
+                </>
+              )}
+            </group>
 
           {/* 速度标签 - 放在自转容器外，不跟随自转 */}
           {isSelected && (
