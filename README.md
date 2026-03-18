@@ -128,6 +128,25 @@ npm run build
 npm run preview
 ```
 
+## 🚀 在线部署
+
+想要将项目部署到互联网供大众使用？查看详细的部署指南：
+
+📖 **[完整部署指南](./DEPLOYMENT.md)**
+
+支持以下部署平台：
+- **GitHub Pages** - 免费托管（推荐）
+- **Vercel** - 极速部署，全球CDN
+- **Netlify** - 简单易用，功能丰富
+
+### 快速开始（GitHub Pages）
+
+1. 推送代码到 GitHub
+2. 在仓库 Settings → Pages 中设置 Source 为 GitHub Actions
+3. 自动部署完成！
+
+详细步骤请参考 [部署指南](./DEPLOYMENT.md)。
+
 ## 🎮 操作指南
 
 ### 基本操作
