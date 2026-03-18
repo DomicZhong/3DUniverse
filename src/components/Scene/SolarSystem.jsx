@@ -125,10 +125,19 @@ function CameraJumper({ scale }) {
 
         console.log('Camera jump details:', { planetSize, distance, targetPosition, foundTarget });
 
-        // 计算相机位置：从目标位置向外延伸，使目标在屏幕中央
+        // 计算相机位置：垂直于太阳-行星连线的视角，太阳在正左方
         const startPos = camera.position.clone();
-        // 从正前方稍上方视角看行星，确保行星在屏幕中央
-        const endPos = targetPosition.clone().add(new THREE.Vector3(0, distance * 0.2, distance));
+
+        // 计算从太阳（原点）指向行星的单位向量
+        const directionFromSun = targetPosition.clone().normalize();
+
+        // 创建垂直于太阳-行星连线的向量（使用叉积）
+        // 如果太阳-行星向量在XZ平面，垂直向量可以通过叉积得到
+        // 使相机在行星的右上方，这样太阳在正左方
+        const perpendicularDirection = new THREE.Vector3(0, 1, 0).cross(directionFromSun).normalize();
+
+        // 相机位置：从行星沿垂直方向延伸
+        const endPos = targetPosition.clone().add(perpendicularDirection.multiplyScalar(distance));
 
         const duration = 1000; // 1秒
         const startTime = Date.now();
